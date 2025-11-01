@@ -126,25 +126,10 @@ function GameScene() {
 
     setIsMoving(moving);
 
-    // Collision detection per axis
-    let finalDX = dx, finalDZ = dz;
-    if (dx !== 0) {
-      const testPosX = new THREE.Vector3(position.x + dx, position.y, position.z);
-      if (checkCollision(testPosX)) finalDX = 0;
-    }
-    if (dz !== 0) {
-      const testPosZ = new THREE.Vector3(position.x, position.y, position.z + dz);
-      if (checkCollision(testPosZ)) finalDZ = 0;
-    }
-    const testPosBoth = new THREE.Vector3(position.x + finalDX, position.y, position.z + finalDZ);
-    if (checkCollision(testPosBoth)) {
-      finalDX = 0;
-      finalDZ = 0;
-    }
-
+    // Collision detection disabled - free movement
     const newPosition = position.clone();
-    newPosition.x += finalDX;
-    newPosition.z += finalDZ;
+    newPosition.x += dx;
+    newPosition.z += dz;
 
     // Jump - only if on ground
     let newVelocity = velocity;
