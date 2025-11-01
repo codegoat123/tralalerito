@@ -131,13 +131,20 @@ function GameScene() {
     newPosition.x += dx;
     newPosition.z += dz;
 
-    // Jump - only if on ground
+    // Jump - only if on ground and key was released
     let newVelocity = velocity;
     let newCanJump = canJump;
-    if (keys.jump && canJump) {
+    
+    // Track if space is currently pressed
+    const spacePressed = keys.jump;
+    
+    // Only jump if: on ground AND space pressed AND wasn't pressed last frame
+    if (spacePressed && canJump) {
       newVelocity = 0.32;
       newCanJump = false;
     }
+    
+    // Reset canJump only when actually on ground (handled below in ground detection)
 
     // Gravity
     newVelocity -= 0.016;
@@ -174,7 +181,10 @@ function GameScene() {
     if (foundGround && newPosition.y <= groundUnder + snapThreshold) {
       newPosition.y = groundUnder;
       newVelocity = 0;
-      newCanJump = true;
+      // Only allow jumping again when space is released
+      if (!keys.jump) {
+        newCanJump = true;
+      }
     } else {
       // In the air - can't jump
       newCanJump = false;
