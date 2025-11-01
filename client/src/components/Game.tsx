@@ -4,7 +4,6 @@ import { KeyboardControls, useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { Tralalerito } from './Tralalerito';
 import { GameWorld } from './GameWorld';
-import { Snake } from './Snake';
 import { PlayerLabel } from './PlayerLabel';
 import { useMultiplayer } from '../hooks/useMultiplayer';
 
@@ -31,7 +30,7 @@ const keyMap = [
 function GameScene() {
   const { camera } = useThree();
   const [, getKeys] = useKeyboardControls<Controls>();
-  const { myPlayerId, myUsername, players, snakes, updatePosition } = useMultiplayer();
+  const { myPlayerId, myUsername, players, updatePosition } = useMultiplayer();
 
   const [position, setPosition] = useState(new THREE.Vector3(0, 2.2, 0));
   const [velocity, setVelocity] = useState(0);
@@ -293,11 +292,6 @@ function GameScene() {
           </group>
         );
       })}
-
-      {/* Snakes */}
-      {snakes.map((snake) => (
-        <Snake key={snake.id} position={[snake.position.x, snake.position.y, snake.position.z]} />
-      ))}
     </>
   );
 }

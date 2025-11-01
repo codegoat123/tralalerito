@@ -5,7 +5,6 @@ export function useMultiplayer() {
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [myUsername, setMyUsername] = useState<string>('');
   const [players, setPlayers] = useState<Record<string, PlayerState>>({});
-  const [snakes, setSnakes] = useState<SnakeState[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const lastSentPosition = useRef({ x: 0, y: 0, z: 0, rotation: 0, time: 0 });
@@ -37,10 +36,6 @@ export function useMultiplayer() {
 
           case 'players_update':
             setPlayers(message.players);
-            break;
-
-          case 'snakes_update':
-            setSnakes(message.snakes);
             break;
 
           case 'player_joined':
@@ -112,7 +107,6 @@ export function useMultiplayer() {
     myPlayerId,
     myUsername,
     players,
-    snakes,
     isConnected,
     updatePosition
   };
