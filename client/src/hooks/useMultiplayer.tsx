@@ -8,6 +8,7 @@ export function useMultiplayer() {
   const [snakes, setSnakes] = useState<SnakeState[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const lastSentPosition = useRef({ x: 0, y: 0, z: 0, rotation: 0, time: 0 });
 
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -80,13 +81,30 @@ export function useMultiplayer() {
 
   const updatePosition = (position: { x: number; y: number; z: number }, rotation: number, isMoving: boolean) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const msg: ClientToServerMessage = {
-        type: 'update_position',
-        position,
-        rotation,
-        isMoving
-      };
-      wsRef.current.send(JSON.stringify(msg));
+      const now = Date.now();
+      const last = lastSentPosition.current;
+      
+      // Calculate distance moved
+      const dx = position.x - last.x;
+      const dy = position.y - last.y;
+      const dz = position.z - last.z;
+      const distanceSq = dx * dx + dy * dy + dz * dz;
+      const rotationDiff = Math.abs(rotation - last.rotation);
+      
+      // Only send if moved significantly or 100ms passed
+      const shouldSend = distanceSq > 0.01 || rotationDiff > 0.05 || (now - last.time) > 100;
+      
+      if (shouldSend) {
+        const msg: ClientToServerMessage = {
+          type: 'update_position',
+          position,
+          rotation,
+          isMoving
+        };
+        wsRef.current.send(JSON.stringify(msg));
+        
+        lastSentPosition.current = { x: position.x, y: position.y, z: position.z, rotation, time: now };
+      }
     }
   };
 

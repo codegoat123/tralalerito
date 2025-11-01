@@ -18,6 +18,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const players = new Map<string, PlayerState>();
   const snakes: SnakeState[] = [];
   const clientSockets = new Map<string, WebSocket>();
+  let playerUpdatePending = false;
+  let pendingPlayerUpdates = new Set<string>();
 
   // Initialize snakes (5 snakes on the map)
   for (let i = 0; i < 5; i++) {
@@ -155,17 +157,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
               player.position = { x: 0, y: 2.2, z: 0 };
             }
 
-            // Broadcast updated players state to ALL clients
-            const updateMsg: ServerToClientMessage = {
-              type: 'players_update',
-              players: Object.fromEntries(players)
-            };
+            // Mark this player as updated
+            pendingPlayerUpdates.add(playerId);
 
-            clientSockets.forEach((clientWs) => {
-              if (clientWs.readyState === WebSocket.OPEN) {
-                clientWs.send(JSON.stringify(updateMsg));
-              }
-            });
+            // Schedule broadcast if not already pending
+            if (!playerUpdatePending) {
+              playerUpdatePending = true;
+              setImmediate(() => {
+                // Broadcast updated players state to ALL clients
+                const updateMsg: ServerToClientMessage = {
+                  type: 'players_update',
+                  players: Object.fromEntries(players)
+                };
+
+                clientSockets.forEach((clientWs) => {
+                  if (clientWs.readyState === WebSocket.OPEN) {
+                    clientWs.send(JSON.stringify(updateMsg));
+                  }
+                });
+
+                playerUpdatePending = false;
+                pendingPlayerUpdates.clear();
+              });
+            }
           }
         }
       } catch (error) {

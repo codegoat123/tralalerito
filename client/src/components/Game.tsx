@@ -225,13 +225,13 @@ function GameScene() {
         if (id !== myPlayerId) {
           const prevPlayer = prev[id];
           if (prevPlayer) {
-            // Lerp position for smooth movement
+            // Lerp position for smooth movement with faster interpolation
             updated[id] = {
               ...player,
               position: {
-                x: prevPlayer.position.x + (player.position.x - prevPlayer.position.x) * 0.3,
-                y: prevPlayer.position.y + (player.position.y - prevPlayer.position.y) * 0.3,
-                z: prevPlayer.position.z + (player.position.z - prevPlayer.position.z) * 0.3,
+                x: prevPlayer.position.x + (player.position.x - prevPlayer.position.x) * 0.5,
+                y: prevPlayer.position.y + (player.position.y - prevPlayer.position.y) * 0.5,
+                z: prevPlayer.position.z + (player.position.z - prevPlayer.position.z) * 0.5,
               }
             };
           } else {
@@ -242,7 +242,7 @@ function GameScene() {
       return updated;
     });
 
-    // Update multiplayer position - send every frame for smooth movement
+    // Update multiplayer position (throttled in useMultiplayer hook)
     updatePosition(
       { x: newPosition.x, y: newPosition.y, z: newPosition.z },
       newAngle,
