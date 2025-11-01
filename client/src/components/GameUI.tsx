@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMultiplayer } from '../hooks/useMultiplayer';
 
 export function GameUI() {
-  const { myUsername, players, isConnected } = useMultiplayer();
+  const { myPlayerId, myUsername, players, isConnected } = useMultiplayer();
   const [chatVisible, setChatVisible] = useState(true);
 
   const handleToggleChat = () => {
@@ -14,7 +14,7 @@ export function GameUI() {
   };
 
   // Handle keyboard toggle with 'C'
-  useState(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'c' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         setChatVisible(prev => !prev);
@@ -22,9 +22,11 @@ export function GameUI() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  });
+  }, []);
 
-  const playerCount = Object.keys(players).length + (myUsername ? 1 : 0);
+  // Filter out local player from the players list to avoid duplicates
+  const otherPlayers = Object.entries(players).filter(([id]) => id !== myPlayerId);
+  const playerCount = otherPlayers.length + (myUsername ? 1 : 0);
 
   return (
     <>
@@ -71,8 +73,8 @@ export function GameUI() {
               {myUsername} (You)
             </div>
           )}
-          {Object.values(players).map(player => (
-            <div key={player.id} style={{ padding: '2px 0' }}>
+          {otherPlayers.map(([id, player]) => (
+            <div key={id} style={{ padding: '2px 0' }}>
               {player.username}
             </div>
           ))}

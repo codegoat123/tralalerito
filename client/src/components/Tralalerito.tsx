@@ -9,7 +9,7 @@ interface TralaleritoProps {
   walkCycle?: number;
 }
 
-export function Tralalerito({ position, rotation, isMoving = false, walkCycle = 0 }: TralaeritoProps) {
+export function Tralalerito({ position, rotation, isMoving = false, walkCycle = 0 }: TralaleritoProps) {
   const groupRef = useRef<Group>(null);
   const leftShoeRef = useRef<Mesh>(null);
   const rightShoeRef = useRef<Mesh>(null);

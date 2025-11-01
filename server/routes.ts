@@ -39,7 +39,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let closestDistance = Infinity;
       
       // Find closest player within range
-      players.forEach(player => {
+      players.forEach((player: PlayerState) => {
         const dx = player.position.x - snake.position.x;
         const dz = player.position.z - snake.position.z;
         const distance = Math.sqrt(dx * dx + dz * dz);
@@ -51,7 +51,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Move towards closest player
-      if (closestPlayer) {
+      if (closestPlayer !== null) {
         snake.targetPlayerId = closestPlayer.id;
         const dx = closestPlayer.position.x - snake.position.x;
         const dz = closestPlayer.position.z - snake.position.z;
