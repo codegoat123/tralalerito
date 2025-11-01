@@ -138,10 +138,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (message.type === 'update_position' && playerId) {
           const player = players.get(playerId);
           if (player) {
+            const oldY = player.position.y;
+            
             // Update player state
             player.position = message.position;
             player.rotation = message.rotation;
             player.isMoving = message.isMoving;
+
+            // Basic anti-cheat: prevent impossible jumps (more than 10 units up in one update)
+            if (player.position.y - oldY > 10) {
+              player.position.y = oldY + 2; // Cap the jump
+            }
+
+            // Prevent falling through the world
+            if (player.position.y < -40) {
+              player.position = { x: 0, y: 2.2, z: 0 };
+            }
 
             // Broadcast updated players state to ALL clients
             const updateMsg: ServerToClientMessage = {

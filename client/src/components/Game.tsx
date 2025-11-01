@@ -40,6 +40,7 @@ function GameScene() {
   const [walkCycle, setWalkCycle] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
   const [remoteWalkCycles, setRemoteWalkCycles] = useState<Record<string, number>>({});
+  const [interpolatedPlayers, setInterpolatedPlayers] = useState<Record<string, PlayerState>>({});
 
   const raycaster = useRef(new THREE.Raycaster());
   const collisionCandidates = useRef<THREE.Object3D[]>([]);
@@ -203,7 +204,7 @@ function GameScene() {
       setWalkCycle(prev => prev + 0.28);
     }
 
-    // Update remote player walk cycles
+    // Interpolate remote player positions and update walk cycles
     setRemoteWalkCycles(prev => {
       const updated = { ...prev };
       Object.entries(players).forEach(([id, player]) => {
@@ -217,14 +218,36 @@ function GameScene() {
       return updated;
     });
 
-    // Update multiplayer position (throttled by frame rate)
-    if (Math.random() < 0.3) { // Increased from 0.1 to 0.3 for smoother remote player movement
-      updatePosition(
-        { x: newPosition.x, y: newPosition.y, z: newPosition.z },
-        newAngle,
-        moving
-      );
-    }
+    // Smooth interpolation for remote players
+    setInterpolatedPlayers(prev => {
+      const updated: Record<string, PlayerState> = {};
+      Object.entries(players).forEach(([id, player]) => {
+        if (id !== myPlayerId) {
+          const prevPlayer = prev[id];
+          if (prevPlayer) {
+            // Lerp position for smooth movement
+            updated[id] = {
+              ...player,
+              position: {
+                x: prevPlayer.position.x + (player.position.x - prevPlayer.position.x) * 0.3,
+                y: prevPlayer.position.y + (player.position.y - prevPlayer.position.y) * 0.3,
+                z: prevPlayer.position.z + (player.position.z - prevPlayer.position.z) * 0.3,
+              }
+            };
+          } else {
+            updated[id] = player;
+          }
+        }
+      });
+      return updated;
+    });
+
+    // Update multiplayer position - send every frame for smooth movement
+    updatePosition(
+      { x: newPosition.x, y: newPosition.y, z: newPosition.z },
+      newAngle,
+      moving
+    );
 
     // Camera follow
     const desiredCamY = Math.min(newPosition.y + 3.6, newPosition.y + 12);
@@ -253,7 +276,7 @@ function GameScene() {
       )}
 
       {/* Other players */}
-      {Object.entries(players).map(([id, player]) => {
+      {Object.entries(interpolatedPlayers).map(([id, player]) => {
         if (id === myPlayerId) return null;
         return (
           <group key={id}>
