@@ -209,13 +209,16 @@ function GameScene() {
       Object.entries(players).forEach(([id, player]) => {
         if (id !== myPlayerId && player.isMoving) {
           updated[id] = (prev[id] || 0) + 0.28;
+        } else if (id !== myPlayerId) {
+          // Reset walk cycle when not moving
+          updated[id] = 0;
         }
       });
       return updated;
     });
 
     // Update multiplayer position (throttled by frame rate)
-    if (Math.random() < 0.1) {
+    if (Math.random() < 0.3) { // Increased from 0.1 to 0.3 for smoother remote player movement
       updatePosition(
         { x: newPosition.x, y: newPosition.y, z: newPosition.z },
         newAngle,
