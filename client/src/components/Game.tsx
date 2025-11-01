@@ -143,7 +143,7 @@ function GameScene() {
     newPosition.x += finalDX;
     newPosition.z += finalDZ;
 
-    // Jump
+    // Jump - only if on ground
     let newVelocity = velocity;
     let newCanJump = canJump;
     if (keys.jump && canJump) {
@@ -164,6 +164,7 @@ function GameScene() {
     const intersects = raycaster.current.intersectObjects(collisionCandidates.current, true);
 
     let groundUnder = 0;
+    let foundGround = false;
     if (intersects.length > 0) {
       for (const hit of intersects) {
         const hitPoint = hit.point;
@@ -175,16 +176,20 @@ function GameScene() {
 
         if (upDot > 0.7 && isBelow && horizDistSq < 1.1 * 1.1) {
           groundUnder = hitPoint.y;
+          foundGround = true;
           break;
         }
       }
     }
 
     const snapThreshold = 0.06;
-    if (newPosition.y <= groundUnder + snapThreshold) {
+    if (foundGround && newPosition.y <= groundUnder + snapThreshold) {
       newPosition.y = groundUnder;
       newVelocity = 0;
       newCanJump = true;
+    } else {
+      // In the air - can't jump
+      newCanJump = false;
     }
 
     // Safety reset
