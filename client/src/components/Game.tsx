@@ -39,6 +39,7 @@ function GameScene() {
   const [cameraAngle, setCameraAngle] = useState(0);
   const [walkCycle, setWalkCycle] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
+  const [remoteWalkCycles, setRemoteWalkCycles] = useState<Record<string, number>>({});
 
   const raycaster = useRef(new THREE.Raycaster());
   const collisionCandidates = useRef<THREE.Object3D[]>([]);
@@ -202,6 +203,17 @@ function GameScene() {
       setWalkCycle(prev => prev + 0.28);
     }
 
+    // Update remote player walk cycles
+    setRemoteWalkCycles(prev => {
+      const updated = { ...prev };
+      Object.entries(players).forEach(([id, player]) => {
+        if (id !== myPlayerId && player.isMoving) {
+          updated[id] = (prev[id] || 0) + 0.28;
+        }
+      });
+      return updated;
+    });
+
     // Update multiplayer position (throttled by frame rate)
     if (Math.random() < 0.1) {
       updatePosition(
@@ -246,7 +258,7 @@ function GameScene() {
               position={[player.position.x, player.position.y, player.position.z]}
               rotation={player.rotation}
               isMoving={player.isMoving}
-              walkCycle={0}
+              walkCycle={remoteWalkCycles[id] || 0}
             />
             <PlayerLabel
               username={player.username}
