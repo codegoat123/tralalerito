@@ -68,7 +68,7 @@ function GameScene() {
     }
   });
 
-  // Check collision
+  // Check collision (exclude terrain for horizontal movement checks)
   const checkCollision = (newPos: THREE.Vector3): boolean => {
     const halfW = 0.45;
     const halfD = 0.45;
@@ -77,6 +77,9 @@ function GameScene() {
     const charBox = new THREE.Box3(min, max);
 
     for (const obj of collisionCandidates.current) {
+      // Skip terrain objects for horizontal collision (only check walls/structures)
+      if (obj.userData.isTerrain) continue;
+      
       const box = new THREE.Box3().setFromObject(obj);
       if (box.intersectsBox(charBox)) return true;
     }
